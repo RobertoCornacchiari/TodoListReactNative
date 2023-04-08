@@ -12,7 +12,7 @@ import tw from "twrnc";
 import { Icon } from "@rneui/themed";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { StackParameters } from "../App";
-import { checkTodo, getListGivenIndex } from "../state";
+import { addTodo, checkTodo, getListGivenIndex, removeTodo } from "../state";
 import { useAppDispatch, useAppSelector } from "../hooks";
 
 export interface ITodo {
@@ -24,24 +24,18 @@ export interface ITodo {
 type Props = NativeStackScreenProps<StackParameters, "TodoList">;
 
 const HomeScreen = ({route}: Props) => {
-  const list = useAppSelector(state => getListGivenIndex(state, route.params.id));
+  const idList = route.params.id;
+  const list = useAppSelector(state => getListGivenIndex(state, idList));
   const dispatch = useAppDispatch();
-  const [todos, setTodos] = useState<ITodo[]>([]);
   const [text, setText] = useState<string>("");
 
   const add = (text: string) => {
-    setTodos((prev) =>
-      prev.concat({
-        id: "" + Math.random() * 1000000,
-        title: text,
-        checked: false,
-      })
-    );
+    dispatch(addTodo({idList: idList, text}));
     setText("");
   };
 
   const remove = (id: string) => {
-    setTodos((prev) => prev.filter((item) => item.id !== id));
+    dispatch(removeTodo({idList: idList, idTodo: id}));
   };
 
   return (
@@ -57,7 +51,7 @@ const HomeScreen = ({route}: Props) => {
             <BouncyCheckbox
             isChecked={item.checked}
               onPress={() => {
-                dispatch(checkTodo({idList: route.params.id, idTodo: item.id}))
+                dispatch(checkTodo({idList: idList, idTodo: item.id}))
               }}
             />
             <Text
@@ -72,10 +66,10 @@ const HomeScreen = ({route}: Props) => {
               {item.title}
             </Text>
             <Pressable
-              style={tw`h-5 w-5 items-center justify-center rounded-full bg-red-500 mr-2`}
+              style={tw`items-center justify-center mr-2`}
               onPress={() => remove(item.id)}
             >
-              <Icon name="minus" type="feather" size={14} color="#fff" />
+              <Icon name="closecircleo" type="ant-design" size={20} color="red" />
             </Pressable>
           </View>
         )}
